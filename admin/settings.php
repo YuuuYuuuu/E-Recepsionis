@@ -1,0 +1,332 @@
+<?php
+require_once 'auth.php';
+require_once '../staff_call_routing.php';
+
+requireComplaintOperatorPage();
+
+$isAdmin = currentUserIsAdmin();
+
+// Mode pemeliharaan (file flag di root proyek) — admin saja
+if ($isAdmin && isset($_POST['save_maintenance'])) {
+    $on = isset($_POST['maintenance_enabled']) && $_POST['maintenance_enabled'] === '1';
+    if ($on) {
+        if (@file_put_contents(RECEPSIONIS_MAINTENANCE_FLAG, gmdate('c') . "\n") === false) {
+            header('Location: settings.php?maintenance_err=1');
+            exit;
+        }
+    } elseif (is_file(RECEPSIONIS_MAINTENANCE_FLAG)) {
+        @unlink(RECEPSIONIS_MAINTENANCE_FLAG);
+    }
+    $note = trim((string) ($_POST['maintenance_message'] ?? ''));
+    if ($note === '') {
+        if (is_file(RECEPSIONIS_MAINTENANCE_MESSAGE_FILE)) {
+            @unlink(RECEPSIONIS_MAINTENANCE_MESSAGE_FILE);
+        }
+    } elseif (@file_put_contents(RECEPSIONIS_MAINTENANCE_MESSAGE_FILE, $note) === false) {
+        header('Location: settings.php?maintenance_err=1');
+        exit;
+    }
+    header('Location: settings.php?maintenance_ok=1');
+    exit;
+}
+
+// Handle settings update — admin saja
+if ($isAdmin && isset($_POST['update_settings'])) {
+    foreach ($_POST as $key => $value) {
+        if ($key != 'update_settings') {
+            $key_esc = esc($key);
+            $value_esc = esc($value);
+            $koneksi->query("INSERT INTO settings (setting_key, setting_value) 
+                             VALUES ('$key_esc', '$value_esc')
+                             ON DUPLICATE KEY UPDATE setting_value='$value_esc'");
+        }
+    }
+    header("Location: settings.php?success=1");
+    exit;
+}
+
+// Get settings — admin saja
+$settings = [];
+if ($isAdmin) {
+    $result = $koneksi->query("SELECT * FROM settings");
+    while ($row = $result->fetch_assoc()) {
+        $settings[$row['setting_key']] = $row['setting_value'];
+    }
+}
+
+$userId = (int) ($_SESSION['user_id'] ?? 0);
+$prefs = recepsionis_get_notification_preferences($koneksi, $userId);
+$categoryIds = recepsionis_get_admin_category_ids($koneksi, $userId);
+$displayName = trim((string) ($_SESSION['nama_lengkap'] ?? $_SESSION['username'] ?? 'Operator'));
+$apiUrl = function_exists('apiUrl') ? apiUrl('admin_notification_preferences.php') : '../api/admin_notification_preferences.php';
+$pageTitle = $isAdmin ? 'Settings' : 'Preferensi Notifikasi';
+?>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?= htmlspecialchars($pageTitle) ?> - E-Recepsionis System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="../assets/css/style.css" rel="stylesheet">
+    <?php include 'include_staff_call_head.php'; ?>
+</head>
+<body>
+    <?php include 'navbar.php'; ?>
+
+    <div class="container-fluid">
+        <div class="row">
+            <?php include 'sidebar.php'; ?>
+
+            <div class="col-md-10 content-area">
+                <h2 class="mb-4">
+                    <i class="bi bi-<?= $isAdmin ? 'gear' : 'bell' ?>"></i> <?= htmlspecialchars($pageTitle) ?>
+                </h2>
+
+                <?php if ($isAdmin && isset($_GET['success'])): ?>
+                    <div class="alert alert-success alert-dismissible fade show">
+                        <i class="bi bi-check-circle"></i> Settings berhasil diupdate
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                <?php endif; ?>
+                <?php if ($isAdmin && isset($_GET['maintenance_ok'])): ?>
+                    <div class="alert alert-success alert-dismissible fade show">
+                        <i class="bi bi-check-circle"></i> Pengaturan mode pemeliharaan disimpan
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                <?php endif; ?>
+                <?php if ($isAdmin && isset($_GET['maintenance_err'])): ?>
+                    <div class="alert alert-danger alert-dismissible fade show">
+                        <i class="bi bi-exclamation-triangle"></i> Gagal menulis file mode pemeliharaan. Periksa izin folder proyek di server.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                <?php endif; ?>
+
+                <?php include 'include_notification_preferences_section.php'; ?>
+
+                <?php if ($isAdmin): ?>
+                <?php
+                $maint_on = recepsionis_maintenance_active();
+                $maint_msg = '';
+                if (is_file(RECEPSIONIS_MAINTENANCE_MESSAGE_FILE)) {
+                    $maint_msg = (string) file_get_contents(RECEPSIONIS_MAINTENANCE_MESSAGE_FILE);
+                }
+                ?>
+                <div class="card border-warning mb-4">
+                    <div class="card-header bg-warning bg-opacity-10">
+                        <i class="bi bi-tools"></i> Mode pemeliharaan
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted small mb-3">
+                            Saat aktif, pengunjung dan API mendapat halaman / respons pemeliharaan. Panel admin dan skrip migrasi tetap dapat diakses.
+                            Anda juga bisa mengaktifkan lewat server: buat file <code>maintenance.flag</code> di folder root proyek (isi boleh kosong); hapus file untuk menonaktifkan.
+                        </p>
+                        <form method="POST">
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" name="maintenance_enabled" value="1" id="maintenance_enabled" <?= $maint_on ? 'checked' : '' ?>>
+                                <label class="form-check-label" for="maintenance_enabled">Aktifkan mode pemeliharaan</label>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" for="maintenance_message">Pesan tambahan (opsional)</label>
+                                <textarea class="form-control" name="maintenance_message" id="maintenance_message" rows="3" placeholder="Contoh: Estimasi selesai pukul 14:00 WIB."><?= htmlspecialchars($maint_msg) ?></textarea>
+                            </div>
+                            <button type="submit" name="save_maintenance" value="1" class="btn btn-outline-warning">
+                                <i class="bi bi-save"></i> Simpan mode pemeliharaan
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <form method="POST">
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="bi bi-gear"></i> Pengaturan Umum
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">Nama Sistem</label>
+                                <input type="text" name="site_name" class="form-control" 
+                                       value="<?= htmlspecialchars($settings['site_name'] ?? 'E-Recepsionis System') ?>">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Email Sistem</label>
+                                <input type="email" name="site_email" class="form-control" 
+                                       value="<?= htmlspecialchars($settings['site_email'] ?? '') ?>">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Auto Check-Out (jam)</label>
+                                <input type="number" name="auto_checkout_hours" class="form-control" 
+                                       value="<?= htmlspecialchars($settings['auto_checkout_hours'] ?? '8') ?>" min="1">
+                                <small class="text-muted">Check-in biasa: otomatis check-out setelah X jam. Tamu Panggil Staff: otomatis check-out saat lewat hari atau setelah 24 jam.</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <i class="bi bi-toggle-on"></i> Fitur
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" name="queue_enabled" value="1" 
+                                           id="queue_enabled" <?= ($settings['queue_enabled'] ?? '1') == '1' ? 'checked' : '' ?>>
+                                    <label class="form-check-label" for="queue_enabled">
+                                        Aktifkan Sistem Antrian
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" name="badge_enabled" value="1" 
+                                           id="badge_enabled" <?= ($settings['badge_enabled'] ?? '1') == '1' ? 'checked' : '' ?>>
+                                    <label class="form-check-label" for="badge_enabled">
+                                        Aktifkan Sistem Badge
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" name="email_notification" value="1" 
+                                           id="email_notification" <?= ($settings['email_notification'] ?? '1') == '1' ? 'checked' : '' ?>>
+                                    <label class="form-check-label" for="email_notification">
+                                        Aktifkan Notifikasi Email
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" name="sms_notification" value="1" 
+                                           id="sms_notification" <?= ($settings['sms_notification'] ?? '0') == '1' ? 'checked' : '' ?>>
+                                    <label class="form-check-label" for="sms_notification">
+                                        Aktifkan Notifikasi SMS
+                                    </label>
+                                </div>
+                            </div>
+                        
+                            <hr>
+                            <h5>WhatsApp Integration</h5>
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" name="wa_enabled" value="1" 
+                                           id="wa_enabled" <?= ($settings['wa_enabled'] ?? '0') == '1' ? 'checked' : '' ?>>
+                                    <label class="form-check-label" for="wa_enabled">
+                                        Aktifkan Notifikasi WhatsApp
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">WhatsApp API URL</label>
+                                <input type="text" name="wa_api_url" class="form-control" 
+                                       value="<?= htmlspecialchars($settings['wa_api_url'] ?? '') ?>" placeholder="https://api.example.com/send">
+                                <small class="text-muted">Endpoint untuk mengirim pesan WhatsApp (POST JSON: {phone,message})</small>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">WhatsApp API Token (opsional)</label>
+                                <input type="text" name="wa_api_token" class="form-control" 
+                                       value="<?= htmlspecialchars($settings['wa_api_token'] ?? '') ?>" placeholder="API token">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Admin Phones (comma separated)</label>
+                                <input type="text" name="wa_admin_phones" class="form-control" 
+                                       value="<?= htmlspecialchars($settings['wa_admin_phones'] ?? '') ?>" placeholder="628123...,62819...">
+                                <small class="text-muted">Nomor global dipakai sebagai fallback jika user kategori belum punya no_wa. Jika kosong, akan menggunakan nomor pada tabel <code>hosts</code>.</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <button type="submit" name="update_settings" class="btn btn-primary">
+                            <i class="bi bi-save"></i> Simpan Settings
+                        </button>
+                    </div>
+                </form>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../assets/js/notification-badge.js"></script>
+    <?php include 'include_staff_call_footer.php'; ?>
+    <script>
+    (function () {
+        const apiUrl = <?= json_encode($apiUrl, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
+        const alertEl = document.getElementById('prefAlert');
+        const notifEl = document.getElementById('prefNotificationsEnabled');
+        const soundEl = document.getElementById('prefSoundEnabled');
+        const saveBtn = document.getElementById('prefSaveBtn');
+        const testBtn = document.getElementById('prefTestSoundBtn');
+
+        if (!notifEl || !soundEl || !saveBtn) {
+            return;
+        }
+
+        function showAlert(type, msg) {
+            if (!alertEl) return;
+            alertEl.className = 'alert alert-' + type;
+            alertEl.textContent = msg;
+            alertEl.classList.remove('d-none');
+        }
+
+        function syncToRuntime() {
+            if (window.recepsionisStaffCallNotify) {
+                window.recepsionisStaffCallNotify.applyPreferences(
+                    notifEl.checked,
+                    soundEl.checked,
+                    false
+                );
+            }
+        }
+
+        saveBtn.addEventListener('click', async function () {
+            saveBtn.disabled = true;
+            try {
+                const res = await fetch(apiUrl, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        notifications_enabled: notifEl.checked,
+                        sound_enabled: soundEl.checked,
+                    }),
+                });
+                const data = await res.json();
+                if (!data.success) throw new Error(data.message || 'Gagal menyimpan');
+                syncToRuntime();
+                showAlert('success', 'Preferensi notifikasi disimpan.');
+            } catch (e) {
+                showAlert('danger', e.message || 'Gagal menyimpan preferensi.');
+            } finally {
+                saveBtn.disabled = false;
+            }
+        });
+
+        if (testBtn) {
+            testBtn.addEventListener('click', function () {
+                if (window.recepsionisStaffCallNotify) {
+                    window.recepsionisStaffCallNotify.unlockAudio();
+                    window.recepsionisStaffCallNotify.testSound();
+                    showAlert('info', 'Jika tidak terdengar, pastikan suara aktif dan volume perangkat tidak mute.');
+                }
+            });
+        }
+
+        notifEl.addEventListener('change', function () {
+            soundEl.disabled = !notifEl.checked;
+        });
+        soundEl.disabled = !notifEl.checked;
+
+        if (window.location.hash === '#pref-notifikasi') {
+            const target = document.getElementById('pref-notifikasi');
+            if (target) {
+                setTimeout(function () {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
+            }
+        }
+    })();
+    </script>
+</body>
+</html>

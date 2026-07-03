@@ -1,0 +1,8 @@
+realtime-server/.env
+config.socket.php
+config.local.php
+maintenance.flag
+maintenance_message.txt
+.DS_Store
+.cursor/
+E-Resepsionis/

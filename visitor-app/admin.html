@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Live Chat Admin</title>
+    <script>
+      (function () {
+        const path = window.location.pathname || ''
+        if (window.location.port === '5173' && /^\/admin(?:\/|$)/.test(path)) {
+          window.location.replace('http://127.0.0.1:8000/Recepsionis/admin/index.php')
+        }
+      })()
+    </script>
+  </head>
+  <body class="tw-m-0 tw-bg-slate-100">
+    <div id="admin-live-root"></div>
+    <script type="module" src="/admin-live.jsx"></script>
+  </body>
+</html>

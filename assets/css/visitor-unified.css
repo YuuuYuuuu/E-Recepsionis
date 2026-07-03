@@ -1,0 +1,175 @@
+/**
+ * Shared visitor shell: dark blue theme + layered content above animated wallpaper.
+ * Use with body.visitor-unified-shell and main wrap .visitor-shell-content
+ */
+
+body.visitor-unified-shell {
+  background: #030712 !important;
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  color: #e2e8f0;
+}
+
+body.visitor-unified-shell .visitor-shell-content {
+  position: relative;
+  z-index: 10;
+  min-height: 100vh;
+  padding-bottom: 6.5rem;
+}
+
+body.visitor-unified-shell .text-muted {
+  color: #94a3b8 !important;
+}
+
+/* —— Program Studi (prodi.php) —— */
+body.visitor-unified-shell .prodi-page-container {
+  min-height: 100vh;
+}
+
+body.visitor-unified-shell .prodi-page-header {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 100 !important;
+  background: rgba(15, 23, 42, 0.82) !important;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.18) !important;
+  color: #f1f5f9 !important;
+}
+
+body.visitor-unified-shell .prodi-page-header h1 {
+  color: #f8fafc !important;
+}
+
+body.visitor-unified-shell .back-button {
+  background: rgba(30, 41, 59, 0.85) !important;
+  border: 1px solid rgba(148, 163, 184, 0.35) !important;
+  color: #e2e8f0 !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+body.visitor-unified-shell .back-button:hover {
+  background: rgba(51, 65, 85, 0.95) !important;
+  color: #fff !important;
+  border-color: rgba(125, 211, 252, 0.4) !important;
+}
+
+body.visitor-unified-shell .prodi-carousel-item-wrapper {
+  border-color: rgba(148, 163, 184, 0.2) !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45) !important;
+}
+
+body.visitor-unified-shell .prodi-footer {
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 100 !important;
+  background: rgba(15, 23, 42, 0.9) !important;
+  border-top: 1px solid rgba(148, 163, 184, 0.15);
+}
+
+/* —— Room detail —— */
+body.visitor-unified-shell.room-detail-page .breadcrumb-custom a {
+  color: #7dd3fc !important;
+}
+
+body.visitor-unified-shell.room-detail-page .breadcrumb-item.active {
+  color: #cbd5e1 !important;
+}
+
+body.visitor-unified-shell.room-detail-page .room-header .room-title,
+body.visitor-unified-shell.room-detail-page .section-title {
+  color: #f1f5f9 !important;
+}
+
+body.visitor-unified-shell.room-detail-page .room-description {
+  color: #cbd5e1 !important;
+}
+
+/* —— Queue display —— */
+body.visitor-unified-shell .queue-header {
+  background: rgba(255, 255, 255, 0.96) !important;
+  color: var(--visitor-text) !important;
+}
+
+body.visitor-unified-shell .queue-item {
+  background: rgba(255, 255, 255, 0.98) !important;
+}
+
+body.visitor-unified-shell .container-fluid.py-4 > .row h3,
+body.visitor-unified-shell .container-fluid.py-4 h3.mb-3 {
+  color: #f1f5f9 !important;
+}
+
+body.visitor-unified-shell .auto-refresh {
+  left: 50% !important;
+  right: auto !important;
+  transform: translateX(-50%);
+  bottom: 1rem !important;
+  background: rgba(15, 23, 42, 0.88) !important;
+  color: #cbd5e1 !important;
+  border-color: rgba(148, 163, 184, 0.25) !important;
+}
+
+@media (max-width: 768px) {
+  body.visitor-unified-shell .auto-refresh {
+    left: 1rem !important;
+    right: 1rem !important;
+    transform: none;
+    width: auto;
+  }
+}
+
+/* —— Check-in / success cards stay light surfaces —— */
+body.visitor-unified-shell .checkin-card,
+body.visitor-unified-shell .success-card {
+  background: rgba(255, 255, 255, 0.98) !important;
+  border-color: rgba(148, 163, 184, 0.25) !important;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.35) !important;
+  color: var(--visitor-text) !important;
+}
+
+body.visitor-unified-shell .checkin-header h1,
+body.visitor-unified-shell .success-card h1 {
+  color: var(--visitor-text) !important;
+}
+
+/* —— Mobile / HP friendly —— */
+@media (max-width: 768px) {
+  body.visitor-unified-shell .visitor-shell-content {
+    padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  body.visitor-unified-shell .prodi-page-header {
+    padding: 0.75rem 1rem !important;
+  }
+
+  body.visitor-unified-shell .prodi-page-header h1 {
+    font-size: 1.1rem !important;
+  }
+
+  body.visitor-unified-shell .prodi-footer {
+    padding: 0.65rem 1rem calc(0.65rem + env(safe-area-inset-bottom, 0px)) !important;
+    font-size: 0.8rem;
+  }
+
+  body.visitor-unified-shell .checkin-card,
+  body.visitor-unified-shell .success-card {
+    margin: 0.75rem;
+    padding: 1.25rem !important;
+  }
+
+  body.visitor-unified-shell .btn,
+  body.visitor-unified-shell .btn-visitor-primary,
+  body.visitor-unified-shell .btn-visitor-outline {
+    min-height: 48px;
+  }
+
+  body.visitor-unified-shell input.form-control,
+  body.visitor-unified-shell select.form-select,
+  body.visitor-unified-shell textarea.form-control {
+    font-size: 16px;
+  }
+}

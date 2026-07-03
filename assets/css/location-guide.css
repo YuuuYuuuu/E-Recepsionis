@@ -1,0 +1,131 @@
+/* Petunjuk Lokasi — modal denah visitor */
+
+.btn-location-guide {
+    background: linear-gradient(135deg, #0d9488 0%, #0891b2 100%) !important;
+    border: none !important;
+    color: #fff !important;
+    box-shadow: 0 6px 20px rgba(13, 148, 136, 0.35);
+}
+
+.btn-location-guide:hover {
+    background: linear-gradient(135deg, #0f766e 0%, #0e7490 100%) !important;
+    color: #fff !important;
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(13, 148, 136, 0.45);
+}
+
+#locationGuideModal .modal-content {
+    border: none;
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+#locationGuideModal .modal-header {
+    background: linear-gradient(135deg, #0d9488, #0369a1);
+    color: #fff;
+    border: none;
+}
+
+#locationGuideModal .location-chips .badge {
+    font-weight: 500;
+    font-size: 0.75rem;
+}
+
+.location-map-viewport {
+    position: relative;
+    width: 100%;
+    height: min(55vh, 480px);
+    min-height: 280px;
+    background: #0f172a;
+    border-radius: 12px;
+    overflow: hidden;
+    touch-action: none;
+    cursor: grab;
+}
+
+.location-map-viewport.is-dragging {
+    cursor: grabbing;
+}
+
+.location-map-stage {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform-origin: center center;
+    will-change: transform;
+}
+
+.location-map-inner {
+    position: relative;
+    display: inline-block;
+    line-height: 0;
+}
+
+.location-map-inner img {
+    display: block;
+    max-width: none;
+    height: auto;
+    user-select: none;
+    pointer-events: none;
+}
+
+.location-map-overlay {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.location-map-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.location-map-controls .btn-map-tool {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+}
+
+.location-map-fallback {
+    padding: 2rem;
+    text-align: center;
+    color: #64748b;
+    background: #f8fafc;
+    border-radius: 12px;
+    border: 1px dashed #cbd5e1;
+}
+
+#locationGuideModal.modal-fullscreen-map .modal-dialog {
+    max-width: 100%;
+    margin: 0;
+    height: 100%;
+}
+
+#locationGuideModal.modal-fullscreen-map .modal-content {
+    height: 100%;
+    border-radius: 0;
+}
+
+#locationGuideModal.modal-fullscreen-map .location-map-viewport {
+    height: calc(100vh - 220px);
+    max-height: none;
+}
+
+@media (max-width: 576px) {
+    #locationGuideModal .modal-dialog {
+        margin: 0.5rem;
+    }
+
+    .location-map-viewport {
+        height: min(50vh, 360px);
+    }
+}
