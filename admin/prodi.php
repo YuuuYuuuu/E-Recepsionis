@@ -173,7 +173,7 @@ $prodi_list = $koneksi->query("SELECT * FROM prodi ORDER BY fakultas, nama_prodi
                     <div>
                         <h2><i class="bi bi-mortarboard"></i> Program Studi</h2>
                         <p class="text-muted mb-0">
-                            <small><i class="bi bi-info-circle"></i> Data program studi akan ditampilkan di carousel halaman visitor dengan foto, nama, deskripsi, dan QR code</small>
+                            <small><i class="bi bi-info-circle"></i> Data program studi ditampilkan di halaman visitor: foto, deskripsi, kontak person, email, telepon, dan QR code</small>
                         </p>
                     </div>
                     <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addModal">
@@ -208,6 +208,7 @@ $prodi_list = $koneksi->query("SELECT * FROM prodi ORDER BY fakultas, nama_prodi
                                         <th>Nama Prodi</th>
                                         <th>Fakultas</th>
                                         <th>Jenjang</th>
+                                        <th>Kontak</th>
                                         <th>Direct Link</th>
                                         <th>Status</th>
                                         <th width="150">Aksi</th>
@@ -246,6 +247,21 @@ $prodi_list = $koneksi->query("SELECT * FROM prodi ORDER BY fakultas, nama_prodi
                                                 <td><?= htmlspecialchars($prodi['fakultas'] ?: '-') ?></td>
                                                 <td>
                                                     <span class="badge bg-info"><?= htmlspecialchars($prodi['jenjang']) ?></span>
+                                                </td>
+                                                <td>
+                                                    <?php if (!empty($prodi['kontak_person']) || !empty($prodi['no_telp']) || !empty($prodi['email'])): ?>
+                                                        <?php if (!empty($prodi['kontak_person'])): ?>
+                                                            <div><i class="bi bi-person-badge text-muted"></i> <?= htmlspecialchars($prodi['kontak_person']) ?></div>
+                                                        <?php endif; ?>
+                                                        <?php if (!empty($prodi['no_telp'])): ?>
+                                                            <div><i class="bi bi-whatsapp text-muted"></i> <?= htmlspecialchars($prodi['no_telp']) ?></div>
+                                                        <?php endif; ?>
+                                                        <?php if (!empty($prodi['email'])): ?>
+                                                            <div><i class="bi bi-envelope text-muted"></i> <?= htmlspecialchars($prodi['email']) ?></div>
+                                                        <?php endif; ?>
+                                                    <?php else: ?>
+                                                        <span class="text-muted">Belum diisi</span>
+                                                    <?php endif; ?>
                                                 </td>
                                                 <td>
                                                     <?php if ($prodi['direct_link']): ?>
@@ -353,6 +369,30 @@ $prodi_list = $koneksi->query("SELECT * FROM prodi ORDER BY fakultas, nama_prodi
                                                                     <small class="text-muted">Deskripsi yang akan ditampilkan di carousel visitor. Gunakan untuk menjelaskan program studi secara detail.</small>
                                                                 </div>
                                                                 <hr>
+                                                                <h6 class="mb-3"><i class="bi bi-person-lines-fill"></i> Kontak untuk Calon Mahasiswa</h6>
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">Nama Kontak Person</label>
+                                                                    <input type="text" name="kontak_person" class="form-control"
+                                                                           value="<?= htmlspecialchars($prodi['kontak_person'] ?? '') ?>"
+                                                                           placeholder="Contoh: Dewi Sartika, S.Kom., M.Kom.">
+                                                                    <small class="text-muted">Nama PIC yang dapat dihubungi calon mahasiswa.</small>
+                                                                </div>
+                                                                <div class="row">
+                                                                    <div class="col-md-6 mb-3">
+                                                                        <label class="form-label">No. WhatsApp</label>
+                                                                        <input type="text" name="no_telp" class="form-control"
+                                                                               value="<?= htmlspecialchars($prodi['no_telp'] ?? '') ?>"
+                                                                               placeholder="Contoh: 081234567890">
+                                                                        <small class="text-muted">Nomor WhatsApp yang dapat dihubungi calon mahasiswa.</small>
+                                                                    </div>
+                                                                    <div class="col-md-6 mb-3">
+                                                                        <label class="form-label">Email</label>
+                                                                        <input type="email" name="email" class="form-control"
+                                                                               value="<?= htmlspecialchars($prodi['email'] ?? '') ?>"
+                                                                               placeholder="Contoh: prodi@kampus.ac.id">
+                                                                    </div>
+                                                                </div>
+                                                                <hr>
                                                                 <h6 class="mb-3"><i class="bi bi-link-45deg"></i> Link Direct (Opsional - untuk QR Code)</h6>
                                                                 <div class="mb-3">
                                                                     <label class="form-label">Link Direct</label>
@@ -373,7 +413,7 @@ $prodi_list = $koneksi->query("SELECT * FROM prodi ORDER BY fakultas, nama_prodi
                                         <?php endwhile; ?>
                                     <?php else: ?>
                                         <tr>
-                                            <td colspan="8" class="text-center text-muted py-4">
+                                            <td colspan="9" class="text-center text-muted py-4">
                                                 <i class="bi bi-inbox" style="font-size: 3rem;"></i><br>
                                                 Belum ada program studi
                                             </td>
@@ -438,6 +478,27 @@ $prodi_list = $koneksi->query("SELECT * FROM prodi ORDER BY fakultas, nama_prodi
                             <textarea name="penjelasan" class="form-control" rows="5" required
                                       placeholder="Deskripsi lengkap program studi..."></textarea>
                             <small class="text-muted">Deskripsi yang akan ditampilkan di carousel visitor. Gunakan untuk menjelaskan program studi secara detail.</small>
+                        </div>
+                        <hr>
+                        <h6 class="mb-3"><i class="bi bi-person-lines-fill"></i> Kontak untuk Calon Mahasiswa</h6>
+                        <div class="mb-3">
+                            <label class="form-label">Nama Kontak Person</label>
+                            <input type="text" name="kontak_person" class="form-control"
+                                   placeholder="Contoh: Dewi Sartika, S.Kom., M.Kom.">
+                            <small class="text-muted">Nama PIC yang dapat dihubungi calon mahasiswa.</small>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">No. WhatsApp</label>
+                                <input type="text" name="no_telp" class="form-control"
+                                       placeholder="Contoh: 081234567890">
+                                <small class="text-muted">Nomor WhatsApp yang dapat dihubungi calon mahasiswa.</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Email</label>
+                                <input type="email" name="email" class="form-control"
+                                       placeholder="Contoh: prodi@kampus.ac.id">
+                            </div>
                         </div>
                         <hr>
                         <h6 class="mb-3"><i class="bi bi-link-45deg"></i> Link Direct (Opsional - untuk QR Code)</h6>

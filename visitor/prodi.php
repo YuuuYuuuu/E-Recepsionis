@@ -240,63 +240,141 @@ $all_prodi = $koneksi->query("SELECT * FROM prodi
             color: var(--text-secondary);
             line-height: 1.75;
             font-size: 0.98rem;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
             text-align: left;
             max-width: 62ch;
         }
 
-        /* QR Code Section */
+        .prodi-contact-section,
         .prodi-qr-section {
-            margin-top: 16px;
-            padding: 20px 18px 18px;
+            height: 100%;
+            min-height: 260px;
+            padding: 18px;
             border: 1px solid var(--border);
             border-radius: var(--radius-md);
-            background: var(--surface-soft);
+            background: linear-gradient(180deg, #f8fbff 0%, var(--surface-soft) 100%);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .prodi-contact-section {
+            margin-bottom: 0;
+        }
+
+        .prodi-contact-title,
+        .prodi-qr-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0 0 14px;
+            font-size: 0.92rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: 0.01em;
+            flex-shrink: 0;
+        }
+
+        .prodi-contact-title i,
+        .prodi-qr-title i {
+            color: var(--accent);
+        }
+
+        .prodi-contact-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            flex: 1;
+        }
+
+        .prodi-contact-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            padding: 12px 14px;
+            border-radius: var(--radius-sm);
+            background: var(--surface);
+            border: 1px solid var(--border);
+            text-decoration: none;
+            color: inherit;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+            width: 100%;
+        }
+
+        .prodi-contact-item--action:hover {
+            border-color: rgba(11, 59, 140, 0.28);
+            box-shadow: var(--shadow-soft);
+            transform: translateY(-1px);
+            color: inherit;
+        }
+
+        .prodi-contact-label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: #64748b;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .prodi-contact-value {
+            font-size: 0.92rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            line-height: 1.45;
+            word-break: break-word;
+        }
+
+        .prodi-contact-item--action .prodi-contact-value {
+            color: var(--accent);
+        }
+
+        .prodi-contact-empty {
+            margin: 0;
+            font-size: 0.86rem;
+            color: #64748b;
+            line-height: 1.5;
+            flex: 1;
+            display: flex;
+            align-items: center;
+        }
+
+        .prodi-bottom-panels {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            align-items: stretch;
+        }
+
+        /* QR Code Section */
+        .prodi-qr-section {
+            justify-content: flex-start;
+            align-items: center;
             text-align: center;
         }
 
-        .prodi-qr-label {
-            font-weight: 700;
-            color: var(--text-primary);
-            font-size: 0.9rem;
-            margin-bottom: 12px;
+        .prodi-qr-body {
+            flex: 1;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-        }
-
-        .prodi-qr-label i {
-            color: var(--accent);
+            width: 100%;
         }
 
         .prodi-qr-wrapper {
             display: inline-block;
-            padding: 9px;
+            padding: 10px;
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: var(--radius-sm);
             box-shadow: var(--shadow-soft);
-            transition: all 0.3s;
-        }
-
-        .prodi-qr-wrapper:hover {
-            border-color: rgba(11, 59, 140, 0.3);
-            transform: translateY(-2px);
-            box-shadow: 0 14px 26px rgba(15, 23, 42, 0.14);
         }
 
         .prodi-qr-code {
             display: inline-block;
-            width: 112px;
-            height: 112px;
-        }
-
-        .prodi-qr-text {
-            margin-top: 10px;
-            font-size: 0.82rem;
-            color: #64748b;
-            font-weight: 500;
+            width: 120px;
+            height: 120px;
         }
 
         /* Carousel Controls */
@@ -446,7 +524,16 @@ $all_prodi = $koneksi->query("SELECT * FROM prodi
 
             .prodi-description {
                 font-size: 0.95rem;
-                margin-bottom: 18px;
+                margin-bottom: 16px;
+            }
+
+            .prodi-bottom-panels {
+                grid-template-columns: 1fr;
+            }
+
+            .prodi-contact-section,
+            .prodi-qr-section {
+                min-height: auto;
             }
 
             .prodi-qr-code {
@@ -661,17 +748,60 @@ $all_prodi = $koneksi->query("SELECT * FROM prodi
                                             <?php endif; ?>
                                         </div>
 
-                                        <!-- QR Code Section -->
-                                        <div class="prodi-qr-section">
-                                            <div class="prodi-qr-label">
-                                                <i class="bi bi-link-45deg"></i> Scan untuk Kunjungi Link
+                                        <div class="prodi-bottom-panels">
+                                            <?php
+                                            $kontakPerson = trim((string) ($prodi['kontak_person'] ?? ''));
+                                            $emailKontak = trim((string) ($prodi['email'] ?? ''));
+                                            $noTelp = trim((string) ($prodi['no_telp'] ?? ''));
+                                            $hasContact = $kontakPerson !== '' || $emailKontak !== '' || $noTelp !== '';
+                                            $waDigits = $noTelp !== '' ? preg_replace('/\D/', '', $noTelp) : '';
+                                            if ($waDigits !== '' && $waDigits[0] === '0') {
+                                                $waDigits = '62' . substr($waDigits, 1);
+                                            }
+                                            $waHref = $waDigits !== '' ? 'https://wa.me/' . $waDigits : '';
+                                            ?>
+                                            <div class="prodi-contact-section">
+                                                <h3 class="prodi-contact-title">
+                                                    <i class="bi bi-person-lines-fill"></i> Hubungi Program Studi
+                                                </h3>
+                                                <?php if ($hasContact): ?>
+                                                    <div class="prodi-contact-grid">
+                                                        <?php if ($kontakPerson !== ''): ?>
+                                                            <div class="prodi-contact-item">
+                                                                <span class="prodi-contact-label"><i class="bi bi-person-badge"></i> Kontak Person</span>
+                                                                <span class="prodi-contact-value"><?= htmlspecialchars($kontakPerson) ?></span>
+                                                            </div>
+                                                        <?php endif; ?>
+                                                        <?php if ($noTelp !== ''): ?>
+                                                            <a href="<?= htmlspecialchars($waHref) ?>" target="_blank" rel="noopener noreferrer" class="prodi-contact-item prodi-contact-item--action">
+                                                                <span class="prodi-contact-label"><i class="bi bi-whatsapp"></i> WhatsApp</span>
+                                                                <span class="prodi-contact-value"><?= htmlspecialchars($noTelp) ?></span>
+                                                            </a>
+                                                        <?php endif; ?>
+                                                        <?php if ($emailKontak !== ''): ?>
+                                                            <a href="mailto:<?= htmlspecialchars($emailKontak) ?>" class="prodi-contact-item prodi-contact-item--action">
+                                                                <span class="prodi-contact-label"><i class="bi bi-envelope-fill"></i> Email</span>
+                                                                <span class="prodi-contact-value"><?= htmlspecialchars($emailKontak) ?></span>
+                                                            </a>
+                                                        <?php endif; ?>
+                                                    </div>
+                                                <?php else: ?>
+                                                    <p class="prodi-contact-empty">
+                                                        Informasi kontak belum tersedia. Silakan hubungi resepsionis untuk bantuan lebih lanjut.
+                                                    </p>
+                                                <?php endif; ?>
                                             </div>
-                                            <div class="prodi-qr-wrapper">
-                                                <div id="<?= $qr_id ?>" class="prodi-qr-code"></div>
+
+                                        <div class="prodi-qr-section" aria-label="QR Code link program studi">
+                                            <h3 class="prodi-qr-title">
+                                                <i class="bi bi-qr-code"></i> QR Link
+                                            </h3>
+                                            <div class="prodi-qr-body">
+                                                <div class="prodi-qr-wrapper">
+                                                    <div id="<?= $qr_id ?>" class="prodi-qr-code"></div>
+                                                </div>
                                             </div>
-                                            <div class="prodi-qr-text">
-                                                Scan QR Code untuk mengunjungi halaman informasi
-                                            </div>
+                                        </div>
                                         </div>
                                     </div>
                                 </div>
@@ -769,8 +899,8 @@ $all_prodi = $koneksi->query("SELECT * FROM prodi
                     if (qrElement && typeof QRCode !== 'undefined') {
                         new QRCode(qrElement, {
                             text: <?= json_encode($qr_data) ?>,
-                            width: 112,
-                            height: 112,
+                            width: 120,
+                            height: 120,
                             colorDark: "#0b3b8c",
                             colorLight: "#ffffff",
                             correctLevel: QRCode.CorrectLevel.H
